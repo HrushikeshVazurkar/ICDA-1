@@ -1,0 +1,374 @@
+---
+title: "IDA Assignment 1"
+author: "S2550941 - Hrushikesh Vazurkar"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+rm(list = ls(all = TRUE))
+```
+
+This document contains all the answers and inferences required to demonstrate my understanding of the concepts and adequately answer the given problems.
+
+## Question 1
+
+\(X,\,Y \sim\) Pareto Distribution. Hence, the PDF and CDFs of X and Y are as follows:
+\[
+f_X(x,\lambda) = \frac{\lambda}{x^{\lambda+1}},\,f_Y(y,\mu) = \frac{\mu}{x^{\mu+1}}
+\]
+\[
+F_X(x,\lambda) = 1 - \frac{1}{x^\lambda},\,F_Y(y,\mu) = 1 - \frac{1}{y^\mu}
+\]
+Moreover, another random variable \(Z = min\{X,Y\}\) with censoring indicator \(\delta = \begin{cases}
+    1 & \text{If } X < Y \\
+    0 & \text{Otherwise}
+\end{cases}\)
+\begin{enumerate}
+    \item \textbf{Find PDFs of \(f_Z(z)\) and \(f_\delta(\delta)\) and state their distributions}.
+    
+To find the PDF of a random variable(Z) represented as a combination of other random variables(X and Y):
+    \begin{itemize}
+        \item Calculate the CDF \(F_Z(z)\) of any \(z \in Z\) in terms of X and Y.
+        \item Differentiate the CDF equation w.r.t z to get PDF \(f_Z(z)\).
+    \end{itemize}
+    \[
+    F_Z(z) = Pr(Z \leq z) = Pr(min\{X,Y\} \leq z) = 1 - Pr(min\{X,Y\} > z) = 1 - Pr(X > z\,and\,\,Y > z)
+    \]
+    Given that X and Y are independent Pareto-distributed variables:
+    \[
+    F_Z(z) = 1 - Pr(X > z).Pr(Y > z) = 1 - [1 - Pr(X < z)].[1 - Pr(Y < z)] = 1 - [1 - (1 - \frac{1}{z^\lambda})] - [1 - (1 - \frac{1}{z^\mu})]
+    \]
+    \[
+    F_Z(z) = 1 - \frac{1}{z^\lambda}.\frac{1}{z^\mu} = 1 - \frac{1}{z^{\lambda + \mu}}
+    \]
+    \[
+    f_Z(z) = \frac{d}{dz} F_Z(z) = \frac{d}{dz} \left[1 - \frac{1}{z^{\lambda + \mu}}\right] = \frac{\lambda + \mu}{z^{\lambda + \mu + 1}}
+    \]
+    From the above equation, Z is Pareto distributed with the parameter value of \(\lambda + \mu\).
+    To find the PDF of censoring indicator \(\delta\), we can represent \(\delta\) values in terms of X and Y and solve further to get the final PDF. From the conditions given, it can be said that \(Pr(\delta = 1) = Pr(X < Y)\) and \(Pr(\delta = 0) = Pr(X \geq Y)\).
+    \[
+    Pr(\delta = 1) = Pr(X < Y) = \int_{1}^{\infty} \int_{x}^{\infty} \frac{\lambda}{x^{\lambda+1}}.\frac{\mu}{x^{\mu+1}}\,dy\,dx = \int_{1}^{\infty} \frac{\lambda}{x^{\lambda+1}}.\mu.\left[\frac{-1}{\mu.y^\mu}\right]_{x}^{\infty}dx = \int_{1}^{\infty} \frac{\lambda}{x^{\lambda+1}}.\frac{1}{x^\mu}dx
+    \]
+    \[
+    Pr(\delta = 1) = \int_{1}^{\infty} \frac{\lambda}{x^{\mu + \lambda+1}}dx = \lambda \left[\frac{x^{-\mu-\lambda}}{-(\mu + \lambda)}\right]_{1}^{\infty} = \lambda \left[\frac{1}{\mu + \lambda}\right] = \frac{\lambda}{\mu + \lambda}
+    \]
+    Similarly, 
+    \(Pr(\delta = 0) = Pr(X \geq Y) = 1 - Pr(X < Y) = 1 - Pr(\delta = 0) = 1 - \frac{\lambda}{\mu + \lambda} = \frac{\mu}{\mu + \lambda}\)
+
+From the above equation, \(\delta\) follows Bernoulli distribution with probability of success \(p = \frac{\lambda}{\lambda + \mu}\).
+    
+   \item \textbf{Derive MLE of \(\theta\) and \(p\), given that \(\theta = \mu + \lambda \), \(p = \frac{\lambda}{\mu + \lambda}\), \(Z_1,Z_2...Z_n \in Z\) with \(f_Z(z;\theta)\) and \(\delta_1,\delta_2...\delta_n \in \delta\) with \(f_\delta(d;p)\)}
+   
+  To find the MLE of \(\theta\) and \(p\) given the probability distributions, we need to compute the log-likelihood of the Likelihood function for both distributions.
+
+  \begin{itemize}
+        \item \textbf{Likelihood Function:} \(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n) = \prod_{i=1}^{n} f_Z(z_i;\theta).f_\delta(\delta_i;p)\)
+        \[
+        L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n) = \prod_{i=1}^{n} \frac{\theta}{z_i^{\theta+1}}.p^{\delta_i}.(1-p)^{1-\delta_i} = \frac{\theta^n}{\prod_{i=1}^{n} z_i^{\theta+1}}.p^{\sum_{i=1}^n \delta_i}.(1-p)^{n-\sum_{i=1}^n \delta_i}
+        \]
+        \item \textbf{Log Likelihood:} \[
+        log(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n)) = n.log(\theta) - (\theta+1)\sum_{i+1}^n log(z_i) + log(p).\sum_{i=1}^n \delta_i + (n - \sum_{i=1}^n \delta_i).log(1 - p)
+        \]
+      
+   \item \textbf{MLE of \(\theta\):} MLE of \(\theta\) w.r.t the Log Likelihood can be found through \(\theta_MLE\) value from \(\frac{d}{d\theta} log(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n)) = 0\)
+        \[
+        \frac{n}{\theta} - \sum_{i+1}^n log(z_i) = 0\,or\,\theta_{MLE} = \frac{n}{\sum_{i+1}^n log(z_i)}
+        \]
+        \item \textbf{MLE of \(p\):} MLE of \(p\) w.r.t the Log Likelihood can be found through \(p_MLE\) value from \(\frac{d}{dp} log(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n)) = 0\)
+        \[
+        \frac{\sum_{i+1}^n \delta_i}{p} - \frac{n-\sum_{i=1}^n \delta_i}{1-p} = 0
+        \]
+        \[
+        \frac{p}{1-p} = \frac{\sum_{i+1}^n \delta_i}{n - \sum_{i=1}^n \delta_i}
+        \]
+        \[
+        p_{MLE} = \frac{\sum_{i=1}^n \delta_i}{n}
+        \]
+    \end{itemize}
+    \item  \textbf{95\% confidence interval for \(\theta\) and p, provided that the Maximum Likelihood Estimator has asymptotic normality.}
+
+As per the formula for 95\% Confidence Intervals:
+        \[
+        CI_{x} = x \pm \sqrt{Var(x)}
+        \]
+        Moreover, since \(\sqrt{Var(x)} = SE_{x} \) or Standard Error of \(x\), the value of \(SE_{x}\) is \(
+        SE_{x} = \frac{1}{\sqrt{I(x)}}
+        \) where \(I(x)\) is Fisher Information.\\ \\
+        However, since the Maximum Likelihood Estimator for variable \(x\) (\(\theta\) or \(p\) in this case) is asymptotically normal, we can assume that the Fisher Information is equivalent to the Observed Fisher Information (without taking the Expected value of the double derivative).
+
+\begin{itemize}
+
+  \item 95\% CI for \(\theta\)
+            \[
+            \frac{\partial^2 log(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n))}{\partial \theta^2} = \frac{-n}{\theta^2}
+            \]
+            \[
+            I(\theta_{MLE}) = -E\left[\frac{-n}{\theta^2}\right] = \frac{n}{\theta_{MLE}^2} = \frac{n}{n^2}.\left(\sum_{i=1}^n log(z_i)\right)^2 ...Asymptotic\,\,Normality
+            \]
+            \[
+            \sqrt{Var(\theta_{MLE})} = \frac{1}{\sqrt{I(\theta_{MLE})}} = \frac{\sqrt{n}}{\sum_{i=1}^n log(z_i)}
+            \]
+            Hence, the final equation for the 95\% CI for \(\theta_{MLE}\) is:
+            \[
+            95\% CI\,\theta_{MLE} = \theta_{MLE} \pm 1.96\,\frac{\sqrt{n}}{\sum_{i=1}^n log(z_i)}
+            \]
+            \item 95\% CI for \(p\)
+            \[
+            \frac{\partial^2 log(L(\theta, p | Z_1, Z_2,...Z_n, \delta_1, \delta_2,...\delta_n))}{\partial p^2} = \frac{-\sum_{i=1}^n \delta_i}{p^2} - \frac{n-\sum_{i=1}^n \delta_i}{(1-p)^2}
+            \]
+            \[
+            I(p_{MLE}) = -E\left[\frac{-\sum_{i=1}^n \delta_i}{p^2} - \frac{n-\sum_{i=1}^n \delta_i}{(1-p)^2}\right] = -\left[\frac{-\sum_{i=1}^n \delta_i}{p_{MLE}^2} - \frac{n-\sum_{i=1}^n \delta_i}{(1-p_{MLE})^2}\right]...Asymptotic\,\,Normality
+            \]
+Solving the above equation by substituting \(p_{MLE}\) value, we get \(I(p_{MLE})\) as:
+            \[
+            I(p_{MLE}) = -\left[\frac{-n^3}{\sum_{i=1}^n \delta_i (n-\sum_{i=1}^n \delta_i)}\right] = \frac{n^3}{\sum_{i=1}^n \delta_i (n-\sum_{i=1}^n \delta_i)} = \frac{n}{p_{MLE}.(1-p_{MLE})}
+            \]
+            Hence, the final equation for the 95\% CI for \(p_{MLE}\) is:
+            \[
+            95\%\,CI\,p_{MLE} = p_{MLE} \pm 1.96\,\sqrt{\frac{p_{MLE}.(1-p_{MLE})}{n}}
+            \]
+        
+    \end{itemize}
+    
+\end{enumerate}
+
+## Question 2
+
+```{r}
+require(mice) # mice package for multiple imputation
+
+load('dataex2.RData') # load dataex2.Rdata dataset
+
+#lists to store the lower and upper bounds for stochastic and bootstrapped regression models.
+lower_stochastic <- upper_stochastic <- lower_bootstrapped <- upper_bootstrapped <- list()
+
+for(i in 1:100){ # iterate to cover all 100 sets of data in dataex2.Rdata
+  imputed_stochastic <- mice(dataex2[, , i], m = 20, method = "norm.predict", printFlag = FALSE, seed = 1) # imputed data through the stochastic method
+  imputed_bootstrapped <- mice(dataex2[, , i], m = 20, method = "norm.boot", printFlag = FALSE, seed = 1) # imputed data through the bootstrapped method
+  
+  # Fits value with estimate for the imputed data through stochastic method
+  fits <- with(imputed_stochastic, lm(Y ~ X))
+  estimate_stochastic <- pool(fits)
+  
+  lower_stochastic[i] <- summary(estimate_stochastic, conf.int = TRUE)[2, 7] # CI lower bound 2.5%
+  upper_stochastic[i] <- summary(estimate_stochastic, conf.int = TRUE)[2, 8] # CI upper bound 97.5%
+  
+  # Fits value with estimate for the imputed data through bootstrapped method
+  fits <- with(imputed_bootstrapped, lm(Y ~ X))
+  estimate_bootstrapped <- pool(fits)
+  
+  lower_bootstrapped[i] <- summary(estimate_bootstrapped, conf.int = TRUE)[2, 7] # CI lower bound 2.5%
+  upper_bootstrapped[i] <- summary(estimate_bootstrapped, conf.int = TRUE)[2, 8] # CI upper bound 97.5%
+}
+```
+
+```{r}
+# Calculate which all CIs from the stochastic imputations contain true_beta parameter.
+true_beta <- 3; count_stochastic <- 0; count_bootstrapped <- 0;
+for(i in 1:100){
+  if(true_beta > lower_stochastic[i] && true_beta < upper_stochastic[i]){
+    count_stochastic <- count_stochastic + 1
+  }
+}
+count_stochastic
+```
+
+```{r}
+# Calculate which all CIs from the bootstrapped imputations contain true_beta parameter.
+for(i in 1:100){
+  if(true_beta > lower_bootstrapped[i] && true_beta < upper_bootstrapped[i]){
+    count_bootstrapped <- count_bootstrapped + 1
+  }
+}
+count_bootstrapped
+```
+
+Here, we are getting the coverage probabilities for Stochastic and Bootstrapped Regression as 80\% and 95\% respectively. Hence, for Stochastic Regression, 80\% of confidence intervals capture the true parameter of interest (true beta), whereas for Bootstrapped Regression, 95% of the confidence intervals capture the true parameter of interest (true beta). Hence, the Bootstrapped Regression will include the true beta parameter more often in the long run. It suggests that the Bootstrapped Regression model is:
+\begin{itemize}
+ \item More reliable - Due to higher coverage probability, Bootstrapped regression model is more reliable for constructing intervals as it contains the true value more often.
+ \item Better generalisation - The confidence intervals created for training data are more likely to contain the true beta parameter for future data as well.
+\end{itemize}
+
+## Question 3
+
+\(Y_i \sim N(\mu, \sigma^2)\,\forall\,i=1,2...n.\). For a new variable X, the observations are left-censored for D(known), such that:
+
+\begin{equation*}
+X_i = \begin{cases}
+Y_i & \text{if } Y_i \geq D \\
+D & \text{if } Y_i < D
+\end{cases}\,\,\,R_i = \begin{cases}
+1 & \text{if } Y_i \geq D \\
+0 & \text{if } Y_i < D
+\end{cases}
+\end{equation*}
+\begin{enumerate}
+    \item Log likelihood of the observed data \(\{(x_i, r_i)\}_{i=1}^n\)
+    \begin{itemize}
+        \item \textbf{Definition for \(X_i\)}: \(X_i = Y_i.I(Y_i \geq D) + D.I(Y_i < D) = Y_i.R_i + D.(I-R_i)\)
+        \item \textbf{Observed Data}: \(\{(x_i, r_i)\}_{i=1}^n\)
+        \item \textbf{Likelihoods}:
+        \begin{itemize}
+            \item \textbf{Non-censored \(Y_i\)}: \(f(x_i;\mu,\sigma^2) = \phi(x_i;\mu,\sigma^2)\) as \(Y_i = X_i\,\forall\,Y_i \geq D\)
+            \item \textbf{Censored \(D\)}: \(S(D;\mu,\sigma^2) = \Phi(x_i;\mu,\sigma^2)\) as survival function \(S(D;\mu,\sigma^2) = Pr(X<D)\) or CDF of X.
+        \end{itemize}
+        \item \textbf{Likelihood Function}: \(L(\mu,\sigma^2|x_i,x_2...x_n) = \prod_{i=1}^{n} f(x_i;\mu,\sigma^2)^{r_i}.S(D;\mu,\sigma^2)^{1-r_i}\)\\ \\
+        \(L(\mu,\sigma^2|x_i,x_2...x_n) = \prod_{i=1}^{n} \phi(x_i;\mu,\sigma^2)^{r_i}.\Phi(x_i;\mu,\sigma^2)^{1-r_i} \)
+        \item \textbf{Log Likelihood of \(\mu,\sigma^2\)}: Taking the natural logarithm of the above equation and solving gives the below equation.\\ \\
+        \(log(L(\mu,\sigma^2|x_i,x_2...x_n)) = \sum_{i=1}^{n} r_i.log(\phi(x_i;\mu,\sigma^2)) + (1-r_i).log(\Phi(x_i;\mu,\sigma^2))\)
+    \end{itemize}
+    \item Using dataex3.RData, determine MLE of \(\mu\) considering \(\sigma^2\) to be \(1.5^2\), using Optim or MaxLik packages in R.
+
+  \textbf{Steps:}
+  \begin{enumerate}
+        \item Load dataex3.RData and define the log-likelihood function to emulate the formula given in the question for the observed data.
+        \item Initialise \(\mu\) value randomly and pass \(\mu\) as a parameter to the Optim function, along with the log-likelihood function, X and R column data from dataex3.RData file, and define additional hyperparameters like control, hessian etc.
+        \item The value returned from the Optim function gives \(\mu_{MLE}\). 
+  \end{enumerate}
+  In this case, the value of  \(\mu_{MLE} = 5.53125\).
+\end{enumerate}
+
+```{r}
+load("dataex3.Rdata") # load dataex3.Rdata dataset.
+
+# Log likelihood function definition for Optim function(equation as per Q3 (a))
+log_likelihood <- function(mu_0, x, r) { # mu_0 passed in to be estimated
+  log_pdf_x <- dnorm(x, mean = mu_0, sd = 1.5, log = TRUE) # calculate log of PDF for all x values (normally distributed).
+  log_cdf_x <- pnorm(x, mean = mu_0, sd = 1.5, log = TRUE) # calculate log of CDF of all x values (normally distributed).
+  log_L <- r * log_pdf_x + (1 - r) * log_cdf_x # calculate individual log likelihood values for all x values (all rows)
+  sum(log_L) # get the final log likelihood value through summation of all individual values.
+}
+
+mu_0 <- 0 # Set initial value for mu (parameter to be estimated)
+optimiser <- optim(par = mu_0, fn = log_likelihood, x = dataex3$X, r=dataex3$R, control = list("fnscale"=-1), hessian = TRUE) # get the result after the MLE optimisation.
+
+optimiser # show full output of the optimisation MLE process.
+cat("The MLE for mu is: ", optimiser$par, '\n') # MLE value of mu as per data
+```
+
+## Question 4
+
+\(Y_1, Y_2 \sim \) Bivariate Correlated Normal Variables having parameters \(\theta = (\mu_1, \mu_2, \sigma_1^2, \sigma_{12}, \sigma_2^2)\). \(Y_1\) is fully observed and \(Y_2\) is missing, R being the Missingness Indicator(R=1 present, R=0 missing). 
+
+\textbf{Ignorability Criteria:} For a missing data mechanism to be ignorable for likelihood-based estimation, the data must be MAR. Moreover, the parameters of the missing data mechanism and the model must be distinct.
+
+Given the missing data mechanisms:
+\begin{enumerate}
+    \item \(logit\{Pr(R = 0 | y1,y2,\theta,\psi)\} = \psi_0 + \psi_1.y1, \psi = (\psi_0, \psi_1)\) distinct from \(\theta\).
+
+    Since the missing data mechanism is based on fully observed data parameter \(Y_1\), it proves that the data is MAR. Moreover, the parameters of the missing data mechanism (\(\psi = (\psi_0, \psi_1)\)) are completely distinct from model parameters \(\theta\). Hence, this missing data mechanism should be ignorable for likelihood-based estimation.
+
+    \item \(logit\{Pr(R = 0 | y1,y2,\theta,\psi)\} = \psi_0 + \psi_1.y2, \psi = (\psi_0, \psi_1)\) distinct from \(\theta\).
+
+    Since the missing data mechanism is based on missing data parameter \(Y_2\), it violates the primary criteria of the data requirement to be MAR. Hence, even though the parameters of the model \(\theta\) are distinct from missingness parameters (\(\psi = (\psi_0, \psi_1)\)), it can't be ignorable for likelihood-based estimation.
+
+    \item \(logit\{Pr(R = 0 | y1,y2,\theta,\psi)\} = \mu_0 + \psi.y1,\) scalar \(\psi\) distinct from \(\theta\).
+
+    The missing data mechanism is based on fully observed data column \(Y_1\), implying that the data is MAR. However, the parameters of the model \(\theta = (\mu_1, \mu_2, \sigma_1^2, \sigma_{12}, \sigma_2^2)\) is not completely distinct from parameters of the missing data mechanism \(\mu_1\) and \(\psi\). Hence, it can't be ignorable for likelihood-based estimation.
+\end{enumerate}
+
+## Question 5
+
+Here, the original dataset dataex5.RData contains 2 columns, X and Y. Column X is fully observed whereas column Y has missing values. Moreover, we know that the column Y with missing data follows the Bernoulli distribution of the form:
+\[
+Y_i \stackrel{\text{ind.}}{\sim} \text{Bernoulli}\left(p_i(\beta)\right), \quad p_i(\beta) = \frac{\exp(\beta_0 + x_i\beta_1)}{1 + \exp(\beta_0 + x_i\beta_1)}
+\]
+\textbf{Derivation for EM Algorithm}
+
+\begin{itemize}
+    \item Log-Likelihood given Bernoulli distribution:
+    \[
+    L(\beta|y_1,..y_n,x_1,...x_n) = \prod_{i=1}^n f(y_i;p_i(\beta)) = \prod_{i=1}^n (p_i(\beta))^{y_i}.(1 - p_i(\beta))^{1-y_i}
+    \]
+    \[
+    log(L(\beta|y_1,..y_n,x_1,...x_n)) = \sum_{i=1}^n \left[y_i.log(p_i(\beta)) + (1-y_i).log(1 - p_i(\beta))\right]
+    \]
+\end{itemize}
+
+This equation for log-likelihood now can be used in the EM Algorithm to determine the optimal value of \(\beta\).
+
+\textbf{Aim:} Compute the MLE of \(\beta = (\beta_0,\beta_1)\) using given dataex5.RData file using EM Algorithm.
+
+\textbf{Assumptions:} Ignorability
+
+\textbf{Steps:}
+\begin{enumerate}
+    \item From \textbf{dataex5.RData}, separate the rows with NA values in the Y column to the end of the data frame and extract observed X, Y and corresponding missing X, Y data(Missing X values in X corresponding to missing Y values).
+    \item Setting the number of iterations to 1000 and setting the convergence difference to \(10^{-6}\), the EM Algorithm works as follows:
+    \begin{enumerate}
+        \item \textbf{E-Step} - This step finds the expected values for missing values in the Y column. Since Y follows the Bernoulli distribution, the expected value of Y is the probability of success, in this case \(p_i(\beta)\).
+        \item \textbf{M-Step} - This step calculates the log-likelihood for the observed and missing values, and uses the Optim function to get the optimal beta values for the next step.
+        \item \textbf{EM Algorithm} - This step iterates E and M-Steps until convergence to find an optimal estimate of beta value.
+    \end{enumerate}
+\end{enumerate}
+
+```{r}
+# Load the data from the RData file
+load("dataex5.Rdata")
+
+# Combine Y and X into a data frame
+# Sort the data frame by Y, with missing values at the end
+
+# Extract all (X,Y) rows as per observed and missing Y respectively.
+q5data <- data.frame(Y = dataex5$Y, X = dataex5$X) # Convert data from dataex5.Rdata into Dataframe
+q5data <- q5data[order(is.na(q5data$Y)), ] # Separate missing Y values from observed
+
+m <- sum(!is.na(q5data$Y))  # Get m = number of observed values
+Y_obs <- q5data$Y[1:m]; X_obs <- q5data$X[1:m] # Extract (X,Y) rows for observed Y
+Y_miss <- q5data$Y[(m+1):length(q5data$Y)]; X_miss <- q5data$X[(m+1):length(q5data$X)] # Extract (X,Y) rows for missing Y
+
+cat("Observed and missing lengths: ", length(Y_obs), length(Y_miss), '\n')
+```
+
+```{r}
+# EM Algorithm with total iterations set to 1000 and convergence limit set to 10^-6
+EM <- function(X_obs, Y_obs, beta_0, limit = 1e-6, max_iter = 1000) {
+  
+  # Expectation (E-step)
+  # Finds expected values for the entries missing in the data(Y column).
+  # NOTE: Since Y follows Bernoulli distribution, the Expected value is equivalent to the probability of success p.
+  E_step <- function(X_obs, Y_obs, beta_curr) {
+    pib <- exp(beta_curr[1] + X_obs * beta_curr[2])/(exp(beta_curr[1] + X_obs * beta_curr[2]) + 1) # calculates p_i for all the based on the formula given in the question.
+    expected_ymiss <- pib[is.na(Y_obs)] # calculates the expected value of missing y entries
+    return(expected_ymiss)
+  }
+
+  # Maximization (M-step)
+  # 1. Defines the log likelihood for observed and missing Y column values in the data
+  # 2. Uses the optim function to find the MLE value of parameter beta (in next step) based on the log likelihood, observed and missing data.
+  M_step <- function(X_obs, Y_obs, Y_miss_expected, beta_init) {
+
+    # Defines the log likelihood of the observed and missing values.
+    log_likelihood <- function(beta, X_obs, Y_obs, Y_miss_expected) {
+      pib <- exp(beta[1] + X_obs * beta[2])/(exp(beta[1] + X_obs * beta[2]) + 1)
+      log_likelihood_obs <- sum(Y_obs * log(pib) + (1 - Y_obs) * log(1 - pib))
+      log_likelihood_miss <- sum(Y_miss_expected * log(pib) + (1 - Y_miss_expected) * log(1 - pib))
+      return(-(log_likelihood_obs + log_likelihood_miss))
+    }
+    
+    # generates the next beta value (MLE) through Optim function
+    beta_next <- optim(beta_init, log_likelihood, Y_obs = Y_obs, X_obs = X_obs, Y_miss_expected = Y_miss_expected)$par
+    return(beta_next)
+  }
+
+  # EM Algorithm Iteration loop
+  beta_curr <- beta_init # initialise the current value of beta at step_t+1
+  i <- 0
+  while (i < max_iter) { # Convergence max iterations
+    Y_miss_expected <- E_step(X_obs, Y_obs, beta_curr) # E Step
+    beta_next <- M_step(X_obs, Y_obs, Y_miss_expected, beta_curr) # M Step
+    if (sum(abs(beta_next - beta_curr)) < limit) { # Convergence limit
+      break
+    }
+    beta_curr <- beta_next # current beta updated for the next iteration.
+    i <- i + 1
+  }
+  return(beta_curr)
+}
+
+beta_init <- c(0, 0)  # Initial beta value guess
+beta_mle <- EM(X_obs, Y_obs, beta_init) # EM function for MLE value of beta, given dataex5.RData file
+cat("The MLE value of parameter beta, as per EM Algorithm is: \n","beta = (", beta_mle[1],',', beta_mle[2], ")", '\n')
+```
